@@ -86,6 +86,50 @@
     border-radius:6px;padding:1px 8px;font-weight:700;
   }
 
+  .date-progress{margin-top:22px}
+  .date-progress .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 10px 28px rgba(21,67,184,.08);
+    padding:20px 22px 18px;
+  }
+  .date-progress-head{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  }
+  .date-progress-head .en{
+    font-size:12px;font-weight:800;letter-spacing:.26em;color:var(--blue);
+  }
+  .date-progress-head h3{
+    margin-top:6px;font-size:clamp(18px,3vw,24px);font-weight:800;color:var(--navy);
+  }
+  .date-progress-meta{
+    display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px;
+    font-size:12.5px;color:var(--muted);font-weight:600;
+  }
+  .date-progress-bar{
+    --progress-days: 1;
+    display:grid;
+    grid-template-columns:repeat(var(--progress-days), minmax(4px,1fr));
+    gap:6px;
+    margin-top:18px;
+    padding:6px 0;
+  }
+  .day-segment{
+    height:14px;border-radius:999px;
+    background:#E6EDF8;border:1px solid #D9E6F8;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
+  }
+  .day-segment.passed{
+    background:linear-gradient(135deg,#6DA7FF 0%,#2D6BFF 100%);
+    border-color:#2D6BFF;
+    box-shadow:0 0 0 1px rgba(45,107,255,.15), inset 0 0 0 1px rgba(255,255,255,.2);
+  }
+  .date-progress-scale{
+    display:flex;justify-content:space-between;gap:10px;
+    margin-top:10px;font-size:12px;color:var(--muted);
+  }
+
   /* ===== Section 通用 ===== */
   section{padding:56px 0}
   .sec-head{margin-bottom:28px}
@@ -288,6 +332,8 @@
 
   /* ===== 响应式 ===== */
   @media (max-width:640px){
+    .date-progress-head{display:block}
+    .date-progress-meta{justify-content:flex-start;margin-top:10px}
     .tl-item{display:block;padding-left:26px;position:relative}
     .tl-item::before{
       content:"";position:absolute;left:8px;top:6px;bottom:0;width:2px;
@@ -332,6 +378,27 @@
       <p>衷心感谢各位一直以来对《蔚蓝档案》的支持与厚爱。</p>
       <p style="margin-top:10px">自 <span class="hl">2027 年 1 月</span> 起，《蔚蓝档案》日本服务的<b>发行商将从 Yostar 株式会社变更为 NEXON 株式会社</b>。包括<b>青辉石</b>在内的全部游戏账号数据，将<span class="hl">完整继承</span>，请放心继续游玩。</p>
       <p style="margin-top:10px">以下就发行商变更可能涉及的常见问题予以解答。</p>
+    </div>
+
+    <div class="date-progress">
+      <div class="panel">
+        <div class="date-progress-head">
+          <div>
+            <div class="en">PROGRESS</div>
+            <h3>发行商变更日程进度</h3>
+          </div>
+          <div class="date-progress-meta">
+            <span id="progressText">已过去 0 天</span>
+            <span>目标：2027年1月</span>
+          </div>
+        </div>
+        <div class="date-progress-bar" id="dateProgressBar" aria-label="发行商变更进度"></div>
+        <div class="date-progress-scale">
+          <span>2026-10-25</span>
+          <span>2026-11</span>
+          <span>2027-01</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -397,7 +464,7 @@
   </div>
 </section>
 
-<!-- ===== 特��� ===== -->
+<!-- ===== 特典 ===== -->
 <section class="gifts" id="gifts">
   <div class="wrap">
     <div class="sec-head">
@@ -458,15 +525,6 @@
       <div class="en">FAQ</div>
       <h2>发行商变更常见问题</h2>
       <div class="bar"></div>
-    </div>
-
-    <div class="faq-red">
-      <div class="faq-red-head"><span class="faq-red-tag">RED FAQ</span> 重要提醒</div>
-      <ul class="faq-red-list">
-        <li>未绑定 Yostar ID 的游客账号将无法继承，维护后可能无法继续登录。</li>
-        <li>发行商变更后，Yostar ID 将无法继续用于《蔚蓝档案》，请提前注册 NEXON 会员账号。</li>
-        <li>持有序列码、月度礼包或时限道具的玩家，建议尽快在维护前使用完毕。</li>
-      </ul>
     </div>
 
     <!-- 1 -->
@@ -689,6 +747,30 @@
           if (!isOpen){ item.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
         });
       })(items[i]);
+    }
+
+    var progressBar = document.getElementById('dateProgressBar');
+    if (progressBar) {
+      var start = new Date('2026-10-25T00:00:00+09:00');
+      var end = new Date('2027-01-01T00:00:00+09:00');
+      var today = new Date();
+      var totalDays = Math.ceil((end - start) / 86400000) + 1;
+      var passedCount = 0;
+      var todayTime = today.getTime();
+
+      for (var i = 0; i < totalDays; i++) {
+        var day = new Date(start.getTime() + i * 86400000);
+        var node = document.createElement('span');
+        node.className = 'day-segment' + (day.getTime() <= todayTime ? ' passed' : '');
+        progressBar.appendChild(node);
+        if (day.getTime() <= todayTime) passedCount++;
+      }
+
+      progressBar.style.setProperty('--progress-days', totalDays);
+      var progressText = document.getElementById('progressText');
+      if (progressText) {
+        progressText.textContent = '已过去 ' + passedCount + ' 天';
+      }
     }
   })();
 </script>
